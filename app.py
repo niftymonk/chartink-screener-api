@@ -8,28 +8,28 @@ CORS(app)
 
 @app.route('/')
 def home():
-      return jsonify({"status": "ChartInk Screener API is running"})
+    return jsonify({"status": "ok"})
 
 @app.route('/api/screener')
 def screener():
-      try:
-                session = requests.Session()
-                r = session.get("https://chartink.com/screener/daily-green-candle", timeout=15)
-                token_match = re.search(r'csrf-token" content="(.+?)"', r.text)
-                headers = {
-                    "Referer": "https://chartink.com/screener/daily-green-candle",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Content-Type": "application/x-www-form-urlencoded"
-                }
-                if token_match:
-                              headers["X-CSRF-TOKEN"] = token_match.group(1)
-                          payload = {"scan_clause": "( {cash} ( latest close > latest open ) )"}
-                resp = session.post("https://chartink.com/screener/process", data=payload, headers=headers, timeout=15)
-                data = resp.json()
-                stocks = data.get("data", [])
-                return jsonify({"success": True, "data": stocks, "count": len(stocks)})
-except Exception as e:
+    try:
+        s = requests.Session()
+        r = s.get("https://chartink.com/screener/daily-green-candle", timeout=15)
+        m = re.search(r'csrf-token" content="(.+?)"', r.text)
+        h = {
+            "Referer": "https://chartink.com/screener/daily-green-candle",
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        if m:
+            h["X-CSRF-TOKEN"] = m.group(1)
+        p = {"scan_clause": "( {cash} ( latest close > latest open ) )"}
+        res = s.post("https://chartink.com/screener/process", data=p, headers=h, timeout=15)
+        d = res.json()
+        stocks = d.get("data", [])
+        return jsonify({"success": True, "data": stocks})
+    except Exception as e:
         return jsonify({"success": False, "error": str(e), "data": []})
 
 if __name__ == '__main__':
-      app.run(debug=True)
+    app.run()
